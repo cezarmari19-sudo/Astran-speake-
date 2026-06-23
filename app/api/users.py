@@ -1,0 +1,59 @@
+from fastapi import APIRouter, HTTPException, Depends
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+from pydantic import BaseModel, field_validator
+from ..core.database import get_db
+from ..core.security import validate_full_id, verify_identity
+from ..models.user import User
+
+router = APIRouter(prefix="/users", tags=["users"])
+
+
+class RegisterRequest(BaseModel):
+    full_id: str
+    public_key: str
+
+    @field_validator("full_id")
+    @classmethod
+    def validate_id(cls, v: str) -> str:
+        if not validate_full_id(v):
+            raise ValueError("full_id invalid: 20 caractere alfanumerice")
+        return v
+
+
+class UserResponse(BaseModel):
+    display_id: str
+    public_key: str
+
+
+@router.post("/register", status_code=201)
+async def register(req: RegisterRequest, db: AsyncSession = Depends(get_db)):
+    """
+    Înregistrare anonimă — serverul nu primește niciun dat personal.
+    Dacă full_id există deja, returnăm conflict (idempotent safe).
+    """
+    existing = await db.get(User, req.full_id)
+    if existing:
+        raise HTTPException(status_code=409, detail="ID deja înregistrat")
+
+    user = User(
+        full_id=req.full_id,
+        display_id=req.full_id[:7],
+        public_key=req.public_key,
+    )
+    db.add(user)
+    return {"status": "registered", "display_id": user.display_id}
+
+
+@router.get("/{display_id}", response_model=UserResponse)
+async def find_by_display_id(display_id: str, db: AsyncSession = Depends(get_db)):
+    """Găsește un user după primele 7 caractere (ID public)."""
+    if len(display_id) != 7:
+        raise HTTPException(status_code=400, detail="display_id trebuie să aibă 7 caractere")
+
+    result = await db.execute(select(User).where(User.display_id == display_id))
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=404, detail="User negăsit")
+
+    return UserResponse(display_id=user.display_id, public_key=user.public_key)
