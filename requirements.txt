@@ -1,11 +1,12 @@
+--only-binary=pydantic-core
 fastapi==0.115.0
 uvicorn[standard]==0.30.6
 websockets==13.1
 sqlalchemy[asyncio]==2.0.36
-asyncpg==0.30.0
+asyncpg==0.29.0
 alembic==1.13.3
-pydantic==2.10.6
-pydantic-core==2.27.2
+pydantic==2.11.5
+pydantic-core==2.47.0
 pydantic-settings==2.7.1
 python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
