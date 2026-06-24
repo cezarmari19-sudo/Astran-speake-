@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from pydantic import BaseModel, field_validator
 from ..core.database import get_db
-from ..core.security import validate_full_id, verify_identity
+from ..core.security import validate_full_id
 from ..models.user import User
 
 router = APIRouter(prefix="/users", tags=["users"])
