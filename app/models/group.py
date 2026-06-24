@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
-from sqlalchemy import String, DateTime, Text, ForeignKey, Table, Column
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import String, DateTime, ForeignKey, Table, Column
+from sqlalchemy.orm import Mapped, mapped_column
 from ..core.database import Base
 
 # Tabel de asociere Many-to-Many: grupuri ↔ membri
