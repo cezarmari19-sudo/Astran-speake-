@@ -1,6 +1,6 @@
 from datetime import datetime, timezone, timedelta
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, update
+from sqlalchemy import select
 from ..models.message import OfflineMessage
 from ..services.connection_manager import manager
 from ..core.config import get_settings
@@ -29,13 +29,11 @@ async def deliver_or_queue(
         "timestamp": datetime.now(timezone.utc).isoformat(),
     }
 
-    # Tentativă livrare instant (Zero-Persistence path)
     delivered = await manager.send_to(recipient_id, payload)
 
     if delivered:
         return {"status": "delivered", "queued": False}
 
-    # Offline path — salvăm temporar în PostgreSQL
     expires_at = datetime.now(timezone.utc) + timedelta(days=settings.message_expiry_days)
     msg = OfflineMessage(
         sender_id=sender_id,
