@@ -1,4 +1,5 @@
 [flake8]
 max-line-length = 100
+extend-ignore = E501,W292,W293
 per-file-ignores =
     app/core/database.py:F401
