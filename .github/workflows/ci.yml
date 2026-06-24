@@ -9,7 +9,7 @@ on:
 jobs:
   quality-check:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -23,10 +23,10 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
-          pip install aiosqlite pyflakes bandit
+          pip install aiosqlite flake8 bandit
 
       - name: Syntax check
-        run: python -m pyflakes app/ main.py
+        run: python -m flake8 app/ main.py
 
       - name: Security scan
         run: bandit -r app/ main.py -ll
