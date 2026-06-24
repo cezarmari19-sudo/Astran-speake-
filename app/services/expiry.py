@@ -1,5 +1,4 @@
 from datetime import datetime, timezone
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import delete
 from ..models.message import OfflineMessage
 from ..core.database import AsyncSessionFactory
