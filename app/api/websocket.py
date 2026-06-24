@@ -1,6 +1,5 @@
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
-from ..core.database import get_db, AsyncSessionFactory
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+from ..core.database import AsyncSessionFactory
 from ..core.security import validate_full_id
 from ..services.connection_manager import manager
 from ..services.delivery import flush_offline_queue, deliver_or_queue
@@ -27,7 +26,6 @@ async def websocket_endpoint(full_id: str, websocket: WebSocket):
     await manager.connect(full_id, websocket)
     logger.info(f"Client conectat: {full_id[:7]}... | Total online: {manager.online_count()}")
 
-    # Livrare automată mesaje offline la reconectare
     async with AsyncSessionFactory() as db:
         delivered = await flush_offline_queue(db, full_id)
         if delivered > 0:
