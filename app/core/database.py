@@ -4,7 +4,6 @@ from .config import get_settings
 
 settings = get_settings()
 
-# Convertim URL pentru asyncpg (PostgreSQL async driver)
 _db_url = settings.database_url
 if _db_url.startswith("postgresql://"):
     _db_url = _db_url.replace("postgresql://", "postgresql+asyncpg://", 1)
@@ -12,14 +11,14 @@ if _db_url.startswith("postgresql://"):
 engine = create_async_engine(
     _db_url,
     echo=settings.environment == "development",
-    pool_pre_ping=True,      # Verifică conexiunea înainte de fiecare query
-    pool_recycle=3600,       # Reciclează conexiunile la fiecare oră
+    pool_pre_ping=True,
+    pool_recycle=3600,
 )
 
 AsyncSessionFactory = async_sessionmaker(
     engine,
     class_=AsyncSession,
-    expire_on_commit=False,  # Evită lazy loading după commit
+    expire_on_commit=False,
 )
 
 
@@ -41,5 +40,7 @@ async def get_db() -> AsyncSession:
 async def init_db() -> None:
     """Creează tabelele la pornirea serverului."""
     async with engine.begin() as conn:
-        from ..models import user, message, group  # noqa: F401
+        from ..models.user import User  # noqa: F401
+        from ..models.message import OfflineMessage  # noqa: F401
+        from ..models.group import Group  # noqa: F401
         await conn.run_sync(Base.metadata.create_all)
