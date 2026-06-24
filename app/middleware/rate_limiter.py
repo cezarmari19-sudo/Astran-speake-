@@ -1,7 +1,6 @@
 from fastapi import Request, HTTPException
 from collections import defaultdict
 from datetime import datetime, timezone
-import asyncio
 
 
 class RateLimiter:
