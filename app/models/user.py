@@ -5,14 +5,11 @@ from ..core.database import Base
 
 
 class User(Base):
-    """
-    Stochează DOAR identitatea publică criptografică.
-    Zero date personale — design Zero-Knowledge.
-    """
     __tablename__ = "users"
 
     full_id: Mapped[str] = mapped_column(String(20), primary_key=True, index=True)
     display_id: Mapped[str] = mapped_column(String(7), nullable=False, index=True)
+    username: Mapped[str] = mapped_column(String(10), nullable=False, default="Anonim")
     public_key: Mapped[str] = mapped_column(Text, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
