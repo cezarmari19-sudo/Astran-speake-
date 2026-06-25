@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "name": "Astran",
+    "slug": "astran-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "android": {
+      "package": "com.astran.mobile",
+      "versionCode": 1
+    }
+  }
+}
