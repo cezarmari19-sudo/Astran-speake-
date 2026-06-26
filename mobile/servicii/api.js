@@ -6,15 +6,20 @@ const fetchWithRetry = async (url, options = {}, retries = 3, delay = 2000) => {
       const res = await fetch(url, options);
       const data = await res.json();
       if (!res.ok) {
-        if (res.status >= 400 && res.status < 500) {
-          throw new Error(data.detail || `HTTP ${res.status}`);
-        }
-        throw new Error(`HTTP ${res.status}`);
+        const detail = data.detail;
+        const message = Array.isArray(detail)
+          ? detail.map(e => e.msg || JSON.stringify(e)).join(', ')
+          : detail || `HTTP ${res.status}`;
+        const err = new Error(message);
+        if (res.status >= 400 && res.status < 500) throw err;
+        if (i === retries - 1) throw err;
+        await new Promise(r => setTimeout(r, delay));
+        continue;
       }
       return data;
     } catch (err) {
       if (i === retries - 1) throw err;
-      if (err.message && err.message.startsWith('HTTP 4')) throw err;
+      if (err.message && !err.message.startsWith('HTTP 5')) throw err;
       await new Promise(r => setTimeout(r, delay));
     }
   }
