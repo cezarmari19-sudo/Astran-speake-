@@ -10,6 +10,9 @@
       }
     },
     "platforms": ["android"],
+    "splash": {
+      "backgroundColor": "#FFFFFF"
+    },
     "android": {
       "package": "com.astran.chat"
     }
