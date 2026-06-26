@@ -1,12 +1,17 @@
 {
   "expo": {
-    "name": "Astran",
-    "slug": "astran-mobile",
+    "name": "Astran Chat",
+    "slug": "astran-chat",
     "version": "1.0.0",
-    "orientation": "portrait",
+    "owner": "cezarmari19-sufo",
+    "extra": {
+      "eas": {
+        "projectId": "f1bb986d-cf9b-4023-8e4f-5d0cb228d5f2"
+      }
+    },
+    "platforms": ["android"],
     "android": {
-      "package": "com.astran.mobile",
-      "versionCode": 1
+      "package": "com.astran.chat"
     }
   }
 }
