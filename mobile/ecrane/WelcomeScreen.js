@@ -24,10 +24,14 @@ export default function WelcomeScreen({ navigation }) {
   }, []);
 
   const checkIdentity = async () => {
-    const { fullId } = await getIdentity();
-    if (fullId) {
-      navigation.replace('Chats');
-    } else {
+    try {
+      const { fullId } = await getIdentity();
+      if (fullId) {
+        navigation.replace('Chats');
+      } else {
+        setLoading(false);
+      }
+    } catch (e) {
       setLoading(false);
     }
   };
@@ -51,7 +55,7 @@ export default function WelcomeScreen({ navigation }) {
         setLoading(false);
       }
     } catch (e) {
-      Alert.alert('Eroare', 'Probleme de conexiune. Încearcă din nou.');
+      Alert.alert('Eroare', e.message || 'Probleme de conexiune. Încearcă din nou.');
       setLoading(false);
     }
   };
