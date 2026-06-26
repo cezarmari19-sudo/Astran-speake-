@@ -1,7 +1,20 @@
 const BASE_URL = 'https://astran-speake.onrender.com';
 
-export const registerUser = async (fullId, publicKey, username) => {
-  const res = await fetch(`${BASE_URL}/users/register`, {
+const fetchWithRetry = async (url, options = {}, retries = 3, delay = 2000) => {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const res = await fetch(url, options);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res.json();
+    } catch (err) {
+      if (i === retries - 1) throw err;
+      await new Promise(r => setTimeout(r, delay));
+    }
+  }
+};
+
+export const registerUser = async (fullId, publicKey, username) =>
+  fetchWithRetry(`${BASE_URL}/users/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -10,16 +23,12 @@ export const registerUser = async (fullId, publicKey, username) => {
       username: username,
     }),
   });
-  return res.json();
-};
 
-export const findUser = async (displayId) => {
-  const res = await fetch(`${BASE_URL}/users/${displayId}`);
-  return res.json();
-};
+export const findUser = async (displayId) =>
+  fetchWithRetry(`${BASE_URL}/users/${displayId}`);
 
-export const sendMessage = async (senderId, recipientId, payload) => {
-  const res = await fetch(`${BASE_URL}/messages/send`, {
+export const sendMessage = async (senderId, recipientId, payload) =>
+  fetchWithRetry(`${BASE_URL}/messages/send`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -29,8 +38,6 @@ export const sendMessage = async (senderId, recipientId, payload) => {
       message_type: 'text',
     }),
   });
-  return res.json();
-};
 
 export const connectWebSocket = (userId, onMessage) => {
   const ws = new WebSocket(
