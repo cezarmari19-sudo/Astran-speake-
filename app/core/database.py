@@ -1,6 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase
 from .config import get_settings
+from typing import AsyncGenerator
 
 settings = get_settings()
 
@@ -13,6 +14,9 @@ engine = create_async_engine(
     echo=settings.environment == "development",
     pool_pre_ping=True,
     pool_recycle=3600,
+    # ← ADAUGĂ ASTA pentru PostgreSQL pe Render
+    pool_size=5,
+    max_overflow=10,
 )
 
 AsyncSessionFactory = async_sessionmaker(
@@ -26,8 +30,8 @@ class Base(DeclarativeBase):
     pass
 
 
-async def get_db() -> AsyncSession:
-    """Dependency injection pentru FastAPI — garantează închiderea sesiunii."""
+async def get_db() -> AsyncGenerator[AsyncSession, None]:
+    """Dependency injection corectă pentru FastAPI async."""
     async with AsyncSessionFactory() as session:
         try:
             yield session
@@ -35,10 +39,11 @@ async def get_db() -> AsyncSession:
         except Exception:
             await session.rollback()
             raise
+        finally:
+            await session.close()  # ← ADAUGĂ close() explicit
 
 
 async def init_db() -> None:
-    """Creează tabelele la pornirea serverului."""
     async with engine.begin() as conn:
         from ..models.user import User  # noqa: F401
         from ..models.message import OfflineMessage  # noqa: F401
