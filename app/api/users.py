@@ -30,15 +30,28 @@ class RegisterRequest(BaseModel):
         return v
 
 
+class RegisterResponse(BaseModel):
+    status: str
+    display_id: str
+    username: str
+
+
 class UserResponse(BaseModel):
     display_id: str
     username: str
     public_key: str
 
 
-@router.post("/register", status_code=201)
-async def register(req: RegisterRequest, db: AsyncSession = Depends(get_db)):
-    existing = await db.get(User, req.full_id)
+@router.post("/register", status_code=201, response_model=RegisterResponse)
+async def register(
+    req: RegisterRequest,
+    db: AsyncSession = Depends(get_db),
+) -> RegisterResponse:
+    # Folosim SELECT explicit în loc de db.get() — evităm lazy loading
+    result = await db.execute(
+        select(User).where(User.full_id == req.full_id)
+    )
+    existing = result.scalar_one_or_none()
     if existing:
         raise HTTPException(status_code=409, detail="ID deja înregistrat")
 
@@ -50,19 +63,29 @@ async def register(req: RegisterRequest, db: AsyncSession = Depends(get_db)):
     )
     db.add(user)
     await db.commit()
-    return {
-        "status": "registered",
-        "display_id": user.display_id,
-        "username": user.username,
-    }
+    await db.refresh(user)  # re-fetch explicit după commit
+
+    return RegisterResponse(
+        status="registered",
+        display_id=user.display_id,
+        username=user.username,
+    )
 
 
 @router.get("/{display_id}", response_model=UserResponse)
-async def find_by_display_id(display_id: str, db: AsyncSession = Depends(get_db)):
+async def find_by_display_id(
+    display_id: str,
+    db: AsyncSession = Depends(get_db),
+) -> UserResponse:
     if len(display_id) != 7:
-        raise HTTPException(status_code=400, detail="display_id trebuie să aibă 7 caractere")
+        raise HTTPException(
+            status_code=400,
+            detail="display_id trebuie să aibă 7 caractere",
+        )
 
-    result = await db.execute(select(User).where(User.display_id == display_id))
+    result = await db.execute(
+        select(User).where(User.display_id == display_id)
+    )
     user = result.scalar_one_or_none()
     if not user:
         raise HTTPException(status_code=404, detail="User negăsit")
