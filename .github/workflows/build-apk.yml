@@ -31,16 +31,10 @@ jobs:
       - name: Debug config
         working-directory: mobile
         run: |
-          echo "=== Node version ==="
-          node --version
-          echo "=== EAS CLI version ==="
-          eas --version
-          echo "=== react-native installed? ==="
-          ls node_modules/react-native 2>/dev/null && echo "DA" || echo "NU - LIPSESTE"
-          echo "=== react installed? ==="
-          ls node_modules/react 2>/dev/null && echo "DA" || echo "NU - LIPSESTE"
+          echo "=== Structura expo/bin/ ==="
+          ls -la node_modules/expo/bin/
           echo "=== expo config ==="
-          node node_modules/expo/bin/cli.js config --json 2>&1
+          node node_modules/expo/bin/cli config --json 2>&1
 
       - name: Build APK
         working-directory: mobile
