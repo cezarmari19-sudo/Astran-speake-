@@ -5,12 +5,14 @@ import {
 } from 'react-native';
 import { sendMessage, connectWebSocket } from '../servicii/api';
 import { getIdentity, getMessages, saveMessages } from '../servicii/stocare';
+import { encryptMessage, decryptMessage } from '../servicii/crypto';
 
 export default function ChatScreen({ route, navigation }) {
   const { contact } = route.params;
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState('');
   const [myId, setMyId] = useState('');
+  const [myPrivateKey, setMyPrivateKey] = useState('');
   const wsRef = useRef(null);
   const listRef = useRef(null);
 
@@ -21,30 +23,51 @@ export default function ChatScreen({ route, navigation }) {
   }, []);
 
   const init = async () => {
-    const { fullId } = await getIdentity();
+    const { fullId, privateKey } = await getIdentity();
     setMyId(fullId);
+    setMyPrivateKey(privateKey);
+
     const saved = await getMessages(contact.id);
     setMessages(saved);
-    wsRef.current = connectWebSocket(fullId, (msg) => {
-      setMessages((prev) => {
-        const updated = [...prev, {
-          id: Date.now().toString(),
-          text: msg.encrypted_payload,
-          from: 'them',
-        }];
-        saveMessages(contact.id, updated);
-        return updated;
-      });
-    });
+
+    wsRef.current = connectWebSocket(
+      fullId,
+      async (msg) => {
+        // Decriptăm mesajul primit cu cheia publică a expeditorului
+        const decrypted = await decryptMessage(
+          msg.encrypted_payload,
+          contact.publicKey,
+          privateKey
+        );
+        setMessages((prev) => {
+          const updated = [...prev, {
+            id: Date.now().toString(),
+            text: decrypted,
+            from: 'them',
+          }];
+          saveMessages(contact.id, updated);
+          return updated;
+        });
+      },
+      (err) => console.error('WS error:', err),
+      () => console.log('WS închis'),
+    );
   };
 
   const send = async () => {
-    if (!text.trim()) return;
-    const msg = { id: Date.now().toString(), text: text.trim(), from: 'me' };
+    const trimmed = text.trim();
+    if (!trimmed) return;
+
+    // Criptăm cu cheia publică a destinatarului
+    const encrypted = await encryptMessage(trimmed, contact.publicKey, myPrivateKey);
+
+    const msg = { id: Date.now().toString(), text: trimmed, from: 'me' };
     const updated = [...messages, msg];
     setMessages(updated);
     await saveMessages(contact.id, updated);
-    await sendMessage(myId, contact.id, text.trim());
+
+    // Trimitem full_id al contactului, nu display_id
+    await sendMessage(myId, contact.fullId, encrypted);
     setText('');
     listRef.current?.scrollToEnd();
   };
