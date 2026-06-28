@@ -28,6 +28,16 @@ jobs:
         working-directory: mobile
         run: npm install
 
+      - name: Debug config
+        working-directory: mobile
+        run: |
+          echo "=== app.json ==="
+          cat app.json
+          echo "=== eas.json ==="
+          cat eas.json
+          echo "=== expo config ==="
+          node node_modules/expo/bin/cli config --json || true
+
       - name: Build APK
         working-directory: mobile
         run: eas build -p android --profile preview --non-interactive
