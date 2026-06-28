@@ -28,22 +28,36 @@ jobs:
         working-directory: mobile
         run: npm install
 
-      - name: Debug config
+      - name: Debug - test node direct
         working-directory: mobile
         run: |
-          echo "=== @expo/cli version ==="
-          cat node_modules/@expo/cli/package.json | grep '"version"'
-          echo "=== babel.config.js ==="
-          cat babel.config.js
-          echo "=== babel-preset-expo installed? ==="
-          ls node_modules/babel-preset-expo 2>/dev/null && echo "DA" || echo "NU - LIPSESTE"
-          echo "=== expo config ==="
-          NODE_OPTIONS="--stack-trace-limit=50" node node_modules/expo/bin/cli config --json 2>&1 || true
+          echo "=== Test memoria disponibila ==="
+          free -m
+          echo "=== @expo/cli entry point ==="
+          node -e "
+            const path = require('path');
+            const pkg = require('./node_modules/@expo/cli/package.json');
+            console.log('main:', pkg.main);
+            console.log('version:', pkg.version);
+          "
+          echo "=== Test require expo ==="
+          node -e "
+            try {
+              const expo = require('./node_modules/expo/package.json');
+              console.log('expo version:', expo.version);
+            } catch(e) {
+              console.error('EROARE:', e.message);
+            }
+          "
+          echo "=== expo config cu timeout ==="
+          timeout 60 node node_modules/expo/bin/cli config --json 2>&1 || echo "EXIT CODE: $?"
 
       - name: Build APK
         working-directory: mobile
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+          EXPO_NO_TELEMETRY: 1
+          NODE_OPTIONS: "--max-old-space-size=4096"
         run: eas build -p android --profile preview --non-interactive
 
       - name: Descarcă APK
