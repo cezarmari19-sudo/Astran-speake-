@@ -33,13 +33,12 @@ jobs:
         run: |
           echo "=== @expo/cli version ==="
           cat node_modules/@expo/cli/package.json | grep '"version"'
+          echo "=== babel.config.js ==="
+          cat babel.config.js
+          echo "=== babel-preset-expo installed? ==="
+          ls node_modules/babel-preset-expo 2>/dev/null && echo "DA" || echo "NU - LIPSESTE"
           echo "=== expo config ==="
-          node node_modules/expo/bin/cli config --json > /tmp/expo_out.txt 2> /tmp/expo_err.txt
-          echo "Exit: $?"
-          echo "--- STDOUT ---"
-          cat /tmp/expo_out.txt
-          echo "--- STDERR ---"
-          cat /tmp/expo_err.txt
+          NODE_OPTIONS="--stack-trace-limit=50" node node_modules/expo/bin/cli config --json 2>&1 || true
 
       - name: Build APK
         working-directory: mobile
