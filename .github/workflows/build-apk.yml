@@ -35,10 +35,12 @@ jobs:
           node --version
           echo "=== EAS CLI version ==="
           eas --version
-          echo "=== Local Expo CLI version ==="
-          ./node_modules/.bin/expo --version
+          echo "=== react-native installed? ==="
+          ls node_modules/react-native 2>/dev/null && echo "DA" || echo "NU - LIPSESTE"
+          echo "=== react installed? ==="
+          ls node_modules/react 2>/dev/null && echo "DA" || echo "NU - LIPSESTE"
           echo "=== expo config ==="
-          ./node_modules/.bin/expo config --json 2>&1
+          node node_modules/expo/bin/cli.js config --json 2>&1
 
       - name: Build APK
         working-directory: mobile
