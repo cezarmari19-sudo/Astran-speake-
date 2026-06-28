@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'mobile/**'
+      - '.github/workflows/**'
 
 jobs:
   build-android:
@@ -37,10 +38,8 @@ jobs:
           eas --version
           echo "=== Expo version ==="
           npx expo --version
-          echo "=== package.json ==="
-          cat package.json
           echo "=== expo config ==="
-          npx expo config --json 2>&1 || true
+          npx expo config --json 2>&1
 
       - name: Build APK
         working-directory: mobile
