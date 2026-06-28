@@ -31,15 +31,11 @@ jobs:
       - name: Debug config
         working-directory: mobile
         run: |
-          echo "=== Continut cli ==="
-          cat node_modules/expo/bin/cli
-          echo ""
           echo "=== @expo/cli version ==="
-          cat node_modules/@expo/cli/package.json | grep '"version"' || echo "lipseste @expo/cli"
-          echo "=== @expo/cli bin ==="
-          ls node_modules/@expo/cli/build/bin/ 2>/dev/null || echo "lipseste build/bin"
-          echo "=== expo config cu stderr ==="
-          node node_modules/expo/bin/cli config --json > /tmp/expo_out.txt 2> /tmp/expo_err.txt; echo "Exit: $?"
+          cat node_modules/@expo/cli/package.json | grep '"version"'
+          echo "=== expo config ==="
+          node node_modules/expo/bin/cli config --json > /tmp/expo_out.txt 2> /tmp/expo_err.txt
+          echo "Exit: $?"
           echo "--- STDOUT ---"
           cat /tmp/expo_out.txt
           echo "--- STDERR ---"
