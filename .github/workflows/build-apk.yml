@@ -28,29 +28,23 @@ jobs:
         working-directory: mobile
         run: npm install
 
-      - name: Debug - test node direct
+      - name: Debug config
         working-directory: mobile
         run: |
-          echo "=== Test memoria disponibila ==="
-          free -m
-          echo "=== @expo/cli entry point ==="
+          echo "=== trace-exit ==="
+          node --trace-exit node_modules/expo/bin/cli config --json 2>&1 || true
+          echo "EXIT: $?"
+          echo ""
+          echo "=== EXPO_DEBUG=true ==="
+          EXPO_DEBUG=true node node_modules/expo/bin/cli config --json 2>&1 || true
+          echo "EXIT: $?"
+          echo ""
+          echo "=== unhandledRejection intercept ==="
           node -e "
-            const path = require('path');
-            const pkg = require('./node_modules/@expo/cli/package.json');
-            console.log('main:', pkg.main);
-            console.log('version:', pkg.version);
-          "
-          echo "=== Test require expo ==="
-          node -e "
-            try {
-              const expo = require('./node_modules/expo/package.json');
-              console.log('expo version:', expo.version);
-            } catch(e) {
-              console.error('EROARE:', e.message);
-            }
-          "
-          echo "=== expo config cu timeout ==="
-          timeout 60 node node_modules/expo/bin/cli config --json 2>&1 || echo "EXIT CODE: $?"
+            process.on('uncaughtException', (e) => { console.error('UNCAUGHT:', e.stack); });
+            process.on('unhandledRejection', (e) => { console.error('REJECTED:', e && e.stack ? e.stack : e); });
+            require('./node_modules/@expo/cli');
+          " -- config --json 2>&1 || true
 
       - name: Build APK
         working-directory: mobile
