@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import { registerUser } from '../servicii/api';
 import { saveIdentity, getIdentity } from '../servicii/stocare';
+import { generateKeyPair } from '../servicii/crypto';
 
 const generateId = () => {
   const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
@@ -31,7 +32,7 @@ export default function WelcomeScreen({ navigation }) {
       } else {
         setLoading(false);
       }
-    } catch (e) {
+    } catch {
       setLoading(false);
     }
   };
@@ -45,17 +46,18 @@ export default function WelcomeScreen({ navigation }) {
     setLoading(true);
     try {
       const fullId = generateId();
-      const publicKey = generateId();
+      const { privateKey, publicKey } = await generateKeyPair();
+
       const result = await registerUser(fullId, publicKey, trimmed);
-      if (result.display_id) {
-        await saveIdentity(fullId, result.display_id, trimmed);
+      if (result?.display_id) {
+        await saveIdentity(fullId, result.display_id, trimmed, privateKey, publicKey);
         navigation.replace('Chats');
       } else {
         Alert.alert('Eroare', 'Nu s-a putut crea contul. Încearcă din nou.');
         setLoading(false);
       }
     } catch (e) {
-      Alert.alert('Eroare', e.message || 'Probleme de conexiune. Încearcă din nou.');
+      Alert.alert('Eroare', e.message || 'Probleme de conexiune.');
       setLoading(false);
     }
   };
