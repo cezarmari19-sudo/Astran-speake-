@@ -3,6 +3,7 @@
     "name": "Astran Chat",
     "slug": "astran-chat",
     "version": "1.0.0",
+    "sdkVersion": "51.0.0",
     "owner": "cezarmari19-sufo",
     "extra": {
       "eas": {
@@ -14,7 +15,10 @@
       "backgroundColor": "#FFFFFF"
     },
     "android": {
-      "package": "com.astran.chat"
+      "package": "com.astran.chat",
+      "adaptiveIcon": {
+        "backgroundColor": "#FFFFFF"
+      }
     },
     "plugins": [
       "expo-crypto"
