@@ -31,7 +31,7 @@ export default function ChatsScreen({ navigation }) {
     }
     try {
       const user = await findUser(search);
-      if (user.display_id) {
+      if (user?.display_id) {
         const exists = contacts.find(c => c.id === user.display_id);
         if (exists) {
           Alert.alert('Contact existent', 'Acest contact e deja adăugat');
@@ -39,8 +39,9 @@ export default function ChatsScreen({ navigation }) {
         }
         const updated = [...contacts, {
           id: user.display_id,
+          fullId: user.full_id,       // ← full_id pentru trimitere mesaje
           username: user.username,
-          publicKey: user.public_key,
+          publicKey: user.public_key,  // ← cheia publică pentru criptare
         }];
         await saveContacts(updated);
         setContacts(updated);
@@ -49,7 +50,7 @@ export default function ChatsScreen({ navigation }) {
         Alert.alert('User negăsit', 'Niciun utilizator cu acest ID');
       }
     } catch (e) {
-      Alert.alert('Eroare', 'Probleme de conexiune');
+      Alert.alert('Eroare', e.message || 'Probleme de conexiune');
     }
   };
 
