@@ -38,6 +38,7 @@ class RegisterResponse(BaseModel):
 
 class UserResponse(BaseModel):
     display_id: str
+    full_id: str
     username: str
     public_key: str
 
@@ -47,7 +48,6 @@ async def register(
     req: RegisterRequest,
     db: AsyncSession = Depends(get_db),
 ) -> RegisterResponse:
-    # Folosim SELECT explicit în loc de db.get() — evităm lazy loading
     result = await db.execute(
         select(User).where(User.full_id == req.full_id)
     )
@@ -63,7 +63,7 @@ async def register(
     )
     db.add(user)
     await db.commit()
-    await db.refresh(user)  # re-fetch explicit după commit
+    await db.refresh(user)
 
     return RegisterResponse(
         status="registered",
@@ -92,6 +92,7 @@ async def find_by_display_id(
 
     return UserResponse(
         display_id=user.display_id,
+        full_id=user.full_id,
         username=user.username,
         public_key=user.public_key,
     )
