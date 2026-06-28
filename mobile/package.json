@@ -7,7 +7,7 @@
   },
   "dependencies": {
     "expo": "~51.0.0",
-    "expo-crypto": "~13.0.0",
+    "expo-crypto": "~12.8.0",
     "@react-navigation/native": "^6.1.0",
     "@react-navigation/native-stack": "^6.9.0",
     "react-native-screens": "~3.31.0",
