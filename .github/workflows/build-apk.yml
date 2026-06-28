@@ -18,10 +18,9 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Setup Expo și EAS
+      - name: Setup EAS
         uses: expo/expo-github-action@v8
         with:
-          expo-version: latest
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
@@ -36,13 +35,15 @@ jobs:
           node --version
           echo "=== EAS CLI version ==="
           eas --version
-          echo "=== Expo version ==="
-          npx expo --version
+          echo "=== Local Expo CLI version ==="
+          ./node_modules/.bin/expo --version
           echo "=== expo config ==="
-          npx expo config --json 2>&1
+          ./node_modules/.bin/expo config --json 2>&1
 
       - name: Build APK
         working-directory: mobile
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
         run: eas build -p android --profile preview --non-interactive
 
       - name: Descarcă APK
