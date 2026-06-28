@@ -15,6 +15,9 @@
     },
     "android": {
       "package": "com.astran.chat"
-    }
+    },
+    "plugins": [
+      "expo-crypto"
+    ]
   }
 }
