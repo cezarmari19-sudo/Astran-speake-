@@ -28,23 +28,12 @@ jobs:
         working-directory: mobile
         run: npm install
 
-      - name: Debug config
+      - name: Verify expo config
         working-directory: mobile
         run: |
-          echo "=== trace-exit ==="
-          node --trace-exit node_modules/expo/bin/cli config --json 2>&1 || true
+          echo "=== expo config ==="
+          node node_modules/expo/bin/cli config --json 2>&1
           echo "EXIT: $?"
-          echo ""
-          echo "=== EXPO_DEBUG=true ==="
-          EXPO_DEBUG=true node node_modules/expo/bin/cli config --json 2>&1 || true
-          echo "EXIT: $?"
-          echo ""
-          echo "=== unhandledRejection intercept ==="
-          node -e "
-            process.on('uncaughtException', (e) => { console.error('UNCAUGHT:', e.stack); });
-            process.on('unhandledRejection', (e) => { console.error('REJECTED:', e && e.stack ? e.stack : e); });
-            require('./node_modules/@expo/cli');
-          " -- config --json 2>&1 || true
 
       - name: Build APK
         working-directory: mobile
