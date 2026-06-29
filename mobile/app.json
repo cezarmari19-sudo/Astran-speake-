@@ -19,9 +19,6 @@
       "adaptiveIcon": {
         "backgroundColor": "#FFFFFF"
       }
-    },
-    "plugins": [
-      "expo-crypto"
-    ]
+    }
   }
 }
