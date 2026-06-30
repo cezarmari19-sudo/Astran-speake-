@@ -33,9 +33,12 @@ export default function ChatScreen({ route, navigation }) {
     wsRef.current = connectWebSocket(
       fullId,
       async (msg) => {
-        // Decriptăm mesajul primit cu cheia publică a expeditorului
+        // FIX BUG 2: serverul trimite msg.payload, nu msg.encrypted_payload
+        const encryptedPayload = msg.payload || msg.encrypted_payload;
+        if (!encryptedPayload) return;
+
         const decrypted = await decryptMessage(
-          msg.encrypted_payload,
+          encryptedPayload,
           contact.publicKey,
           privateKey
         );
@@ -58,7 +61,6 @@ export default function ChatScreen({ route, navigation }) {
     const trimmed = text.trim();
     if (!trimmed) return;
 
-    // Criptăm cu cheia publică a destinatarului
     const encrypted = await encryptMessage(trimmed, contact.publicKey, myPrivateKey);
 
     const msg = { id: Date.now().toString(), text: trimmed, from: 'me' };
@@ -66,7 +68,6 @@ export default function ChatScreen({ route, navigation }) {
     setMessages(updated);
     await saveMessages(contact.id, updated);
 
-    // Trimitem full_id al contactului, nu display_id
     await sendMessage(myId, contact.fullId, encrypted);
     setText('');
     listRef.current?.scrollToEnd();
