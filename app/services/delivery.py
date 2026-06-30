@@ -15,12 +15,6 @@ async def deliver_or_queue(
     encrypted_payload: str,
     message_type: str = "text",
 ) -> dict:
-    """
-    Logica centrală Zero-Knowledge:
-    1. Dacă destinatarul e online → livrare instant din RAM, fără persistență
-    2. Dacă e offline → salvăm în PostgreSQL (criptat E2EE, serverul nu poate citi)
-    3. Payload-ul expiră automat după 14 zile
-    """
     payload = {
         "type": "message",
         "sender_id": sender_id,
@@ -48,10 +42,6 @@ async def deliver_or_queue(
 
 
 async def flush_offline_queue(db: AsyncSession, full_id: str) -> int:
-    """
-    Apelat când un user se conectează — livrează toate mesajele în așteptare
-    și le șterge IMEDIAT după confirmare (Zero-Knowledge garantat).
-    """
     result = await db.execute(
         select(OfflineMessage)
         .where(OfflineMessage.recipient_id == full_id)
@@ -74,5 +64,9 @@ async def flush_offline_queue(db: AsyncSession, full_id: str) -> int:
         if success:
             await db.delete(msg)
             delivered_count += 1
+
+    # FIX BUG 3: commit după ștergere — fără asta mesajele revin la reconectare
+    if delivered_count > 0:
+        await db.commit()
 
     return delivered_count
